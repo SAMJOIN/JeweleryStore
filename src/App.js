@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useReducer, useState } from 'react';
+import { useEffect, useState } from 'react';
 import style from './App.module.css';
-import reducer from './reducer';
 import { itemAPI } from './API/api';
 import Item from './Components/Item/Item';
 import Paginator from './Components/Paginator/Paginator';
@@ -19,6 +18,7 @@ function App() {
   window.ids = ids;
   window.products = products;
 
+
   const getItems = (ids, start, end) => { // ids - массив, откуда будут бараться id, start-отступ от начала всего списка end-конец отступа
     setFetching(true);
     itemAPI.getItems(ids.slice(start, end)).then(response => {
@@ -36,12 +36,14 @@ function App() {
   }
 
   useEffect(() => {
-    itemAPI.getIds().then(response => {
-      setIds(response);
-      setPageCount(Math.ceil(response.length / 50));
-      getItems(response, 0, 51); // Берём slice от response, потому что setIds ещё не успело отработать
-    }).catch(console.log('error'))
-  }, [])
+    if (ids.length === 0) {
+      itemAPI.getIds().then(response => {
+        setIds(response);
+        setPageCount(Math.ceil(response.length / 50));
+        getItems(response, 0, 51); // Берём slice от response, потому что setIds ещё не успело отработать
+      }).catch(console.log('error'))
+    }
+  }, [ids])
 
   useEffect(() => {
     if (currentPage === 1) { // Какой то баг на сервере, при запросе с {'offset':0, 'limit':50} выдаёт только 49 элементов, поэтому установил для первой страницы лимит 51
@@ -53,11 +55,10 @@ function App() {
 
   useEffect(() => {
     setFetching(true);
-    setPageCount(Math.ceil(filtredIds.length / 50));
     setIds(filtredIds);
+    setPageCount(Math.ceil(filtredIds.length / 50));
     setCurrentPage(1);
     getItems(filtredIds, 0, 50)
-    setFetching(false);
   }, [filtredIds])
 
   const onPageChange = (page) => {

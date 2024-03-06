@@ -72,7 +72,7 @@ const Filter = (props) => {
                     <Search onClick={filterByBrand}/>
                 </div>
             </div>
-            <button>Сброс</button>
+            <button className={style.button} onClick={()=> props.setIds([])}>Сброс</button>
         </div>
     );
 }
