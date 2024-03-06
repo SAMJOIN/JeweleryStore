@@ -1,8 +1,8 @@
 import style from './Filter/Filter.module.css'
 
-const Search = () => {
+const Search = (props) => {
     return (
-        <div className={style.search}>
+        <div className={style.search} onClick={props.onClick}>
             <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
                 width="24px" height="24px" viewBox="0 0 1280.000000 1276.000000"
                 preserveAspectRatio="xMidYMid meet">

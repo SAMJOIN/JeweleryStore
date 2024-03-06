@@ -4,6 +4,7 @@ import md5 from "blueimp-md5";
 const GeneratePassword = () => {
     const date = new Date();
     const timeStamp = date.toLocaleString('ru-Ru').split(',')[0].split('.').reverse().join('')
+    // return 'a45cbdfd64776f5e4838b61122540faf'
     return md5(`Valantis_${timeStamp}`)
 }
 
@@ -13,23 +14,6 @@ const instance = axios.create({
 })
 
 export const itemAPI = {
-    async getPageCount(offset, limit) {
-        try {
-            const response = await instance.post('', {
-                'action': 'get_ids',
-                'params': {}
-            })
-            if (response.error) {
-                console.error('Error ID:', response.error);
-                return await this.getPageCount();
-            } else {
-                return response.data.result;
-            }
-        } catch (error) {
-            console.error('Request failed: ', error);
-            throw error;
-        }
-    },
     async getIds(offset, limit) {
         try {
             const response = await instance.post('', {

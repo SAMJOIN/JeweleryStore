@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useCallback, useEffect, useReducer, useState } from 'react';
 import style from './App.module.css';
 import reducer from './reducer';
 import { itemAPI } from './API/api';
@@ -9,55 +9,65 @@ import Filter from './Components/Filter/Filter';
 
 function App() {
 
+  const [filtredIds, setFiltredIds] = useState([]);
+  const [ids, setIds] = useState([]);
   const [products, setProducts] = useState([]);
   const [pageCount, setPageCount] = useState(0);
   const [isFetching, setFetching] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const getItems = (offset, limit) => {
+  window.ids = ids;
+  window.products = products;
+
+  const getItems = (ids, start, end) => { // ids - массив, откуда будут бараться id, start-отступ от начала всего списка end-конец отступа
     setFetching(true);
-    itemAPI.getIds(offset, limit)
-      .then(response => itemAPI.getItems(response)
-        .then(response => {
-          let unique = [];
-          const uniqueItems = response.filter(item => {
-            if (!unique.includes(item.id)) {
-              unique.push(item.id)
-              return item
-            }
-          })
-          setProducts(uniqueItems);
-          setFetching(false);
+    itemAPI.getItems(ids.slice(start, end)).then(response => {
+      let unique = [];
+      const uniqueItems = response.filter(item => {
+        if (!unique.includes(item.id)) {
+          unique.push(item.id)
+          return item
         }
-        )
-      )
-      .catch(error => console.log('Error: ', error.message))
+      })
+      setProducts(uniqueItems);
+      setFetching(false);
+    }
+    ).catch(error => console.log('Error: ', error.message))
   }
+
+  useEffect(() => {
+    itemAPI.getIds().then(response => {
+      setIds(response);
+      setPageCount(Math.ceil(response.length / 50));
+      getItems(response, 0, 51); // Берём slice от response, потому что setIds ещё не успело отработать
+    }).catch(console.log('error'))
+  }, [])
+
+  useEffect(() => {
+    if (currentPage === 1) { // Какой то баг на сервере, при запросе с {'offset':0, 'limit':50} выдаёт только 49 элементов, поэтому установил для первой страницы лимит 51
+      getItems(ids, 0, 51);
+    } else {
+      getItems(ids, 50 * (currentPage - 1), 50 * (currentPage - 1) + 50);
+    }
+  }, [currentPage])
+
+  useEffect(() => {
+    setFetching(true);
+    setPageCount(Math.ceil(filtredIds.length / 50));
+    setIds(filtredIds);
+    setCurrentPage(1);
+    getItems(filtredIds, 0, 50)
+    setFetching(false);
+  }, [filtredIds])
 
   const onPageChange = (page) => {
     setCurrentPage(page);
   }
 
-  useEffect(() => {
-    itemAPI.getPageCount().then(response => setPageCount(Math.ceil(response.length / 50)));
-    console.log('Pages')
-  }, [])
-
-  useEffect(() => {
-    if (currentPage === 1) { // Какой то баг на сервере, при запросе с {'offset':0, 'limit':50} выдаёт только 49 элементов, поэтому установил для первой страницы лимит 51
-      getItems(0, 51);
-    } else {
-      getItems(50 * (currentPage - 1), 50);
-    }
-  }, [currentPage])
-
-  window.products = products
-  window.pageCount = pageCount
-
   return (
     <div className={style.app}>
       <div className={style.filterBlock}>
-        <Filter />
+        <Filter setIds={setIds} setFiltredIds={setFiltredIds} />
       </div>
       <div className={style.mainBlock}>
         <Paginator pageCount={pageCount} onPageChange={onPageChange} currentPage={currentPage} />

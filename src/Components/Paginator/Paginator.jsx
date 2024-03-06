@@ -7,27 +7,35 @@ const Paginator = (props) => {
     const pageCount = props.pageCount;
     const currentPage = props.currentPage;
 
-    if (currentPage - 4 < 3) {
+    if (pageCount > 5) {
+        if (currentPage - 4 < 3) {
 
-        for (let i = 2; i < currentPage + 5; i++) {
-            visiblePages.push(i);
+            for (let i = 2; i < currentPage + 5; i++) {
+                visiblePages.push(i);
+            }
+            visiblePages.push('...');
         }
-        visiblePages.push('...');
-    }
-    else if (currentPage + 4 > pageCount) {
-        visiblePages.push('...');
-        for (let i = currentPage - 4; i < pageCount; i++) {
-            visiblePages.push(i);
+        else if (currentPage + 4 > pageCount) {
+            visiblePages.push('...');
+            for (let i = currentPage - 4; i < pageCount; i++) {
+                visiblePages.push(i);
+            }
         }
-    }
-    else if (currentPage - 4 > 2 || currentPage + 4 < pageCount) {
-        visiblePages.push('...');
-        for (let i = currentPage - 4; i < currentPage + 5; i++)
-            visiblePages.push(i);
-        visiblePages.push('...');
+        else if (currentPage - 4 > 2 || currentPage + 4 < pageCount) {
+            visiblePages.push('...');
+            for (let i = currentPage - 4; i < currentPage + 5; i++)
+                visiblePages.push(i);
+            visiblePages.push('...');
+        }
+        pages = [1, ...visiblePages, pageCount];
+    } else {
+        for(let i = 1; i <= pageCount; i++) {
+            pages.push(i);
+        }
     }
 
-    pages = [1, ...visiblePages, pageCount];
+
+    
 
     return (
         <div className={style.paginatorContainer}>
